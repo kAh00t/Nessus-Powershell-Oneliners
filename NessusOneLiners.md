@@ -11,6 +11,7 @@ Common issues that these steps might help resolve:
 
 From what I can tell, TCP ports 135,139,445 and WMI-IN are required to be open for a scan to run successfully. 
 
+Below is a guide that I have generally found useful, the steps from which have been used to build the following powershell commands.
 https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-Windows
 
 A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output. 
