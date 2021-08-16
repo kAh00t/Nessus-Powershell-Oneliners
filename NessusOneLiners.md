@@ -113,7 +113,7 @@ netsh advfirewall firewall delete rule name="Nessus_Allow_TCP_445_private_SMB_In
 
 * * *
 # Enable LocalAccountTokenFilterPolicy
-- Required if using a local adminisitrator account
+- Required to be set to 1 if using a local adminisitrator account from a remote device. 
 
 #### Get LocalAccountTokenFilterPolicy. Enabled if set to 1 
 ```
@@ -134,7 +134,7 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies
 * * *
 
 # Check/Enable/Disable Admin Shares
-- Restart required after changing 
+- Restart required for changes to take effect!  
 
 
 ### Check if admin shares are enabled (AutoShareServer/AutoShareWorkstaiton)
@@ -152,6 +152,9 @@ Set-SmbServerConfiguration -AutoShareServer  $False -AutoShareWorkstation $False
 
 * * *
 # Check/Enable/Run Remote Registry and WMI 
+- Nessus will not scan correct if WMI or Remote Registry are not set to "Automatic" or "Manual". 
+- You also need to ensure that the Remote Registry service is not set to "disabled", else Nessus will not be able to start the remote registry. 
+
 
 ### Check status of WMI and RemoteRegistry
 ```
