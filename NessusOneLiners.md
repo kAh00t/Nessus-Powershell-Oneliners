@@ -1,8 +1,49 @@
+Below is a list of powershell commands that can aid in diagnosing issues with Tenable Nessus Credential Patch Audit. 
+
+* * *
+# IMPORTANT - Remember to take note of the original settings so you can clean up after yourself! #####
+* * *
+
+Common issues that these steps might help resolve:
+- WMI Not Available 
+- Authentication Failure - Local Checks Not Run 
+- Nessus Windows Scan Not Performed with Admin Privileges (i.e. "It was not possible to connect to '\\MACHINENAME\ADMIN%' with the supplied credentials 
+
+From what I can tell, TCP ports 135,139,445 and WMI-IN are required to be open for a scan to run successfully. 
+
 https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-Windows
+
+A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output. 
+
+"
+1. The Windows Management Instrumentation (WMI) service must be enabled on the target. For more information, see https://technet.microsoft.com/en-us/library/cc180684.aspx
+2. The Remote Registry service must be enabled on the target.
+3. File & Printer Sharing must be enabled in the target's network configuration.
+4. An SMB account must be used that has local administrator rights on the target.
+    Note: A domain account can be used as long as that account is a local administrator on the devices being scanned.
+5. TCP ports 139 and 445 must be open between the Nessus Scanner and the target.
+6. Ensure that there are no security policies are in place that blocks access to these services. This includes:
+        Windows Security Policies
+        Antivirus or Endpoint Security rules
+        IPS/IDS
+7. The default administrative shares must be enabled.
+  - These shares include:
+    - IPC$
+    - ADMIN$
+    - C$
+  - The setting that controls this is AutoShareServer which must be set to 1.
+  - Windows 10 has the ADMIN$ disabled by default.
+  - For all other OS's, these shares are enabled by default and can cause other issues if disabled. For more information, see http://support.microsoft.com/kb/842715/en-us
+"
 
 * * *
 # Check Creds Work
 - Credentials have admin rights if they can access C$ and ADMIN$ share, both required for Nessus to work 
+- My testing indicates that you can use either:
+  - Domain Admin account (in most situations
+  - Local Administrator account (you will need to enable the LocalAccountTokenFilterPolicy i.e. set to 1, to use this account from a remote device) 
+  - Domain User inside the Administrators group of each device you are scanning (handy if you have a limited scope to scan on a domain but don't want to use DA)
+    
 
 #### Check credentials are working from a Linux box 
 ```
@@ -38,7 +79,7 @@ Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "Forc
 ```
 * * *
 
-# Set Windows Firewall Rules to allow Nessus (WMI-IN, 135,139,445) 
+# Set Windows Firewall Rules to required to allow Nessus to perform a full credentialed scan (WMI-IN, 135,139,445) 
 
 #### Add software firewall rules to allow Nessus Credentialed Scanning. Rules are named for ease of identification and removal. Double check no other explicit deny rules prevent these custom rules running. If you are on a domain/public profile you will need to change the "profile" bit. 
 
