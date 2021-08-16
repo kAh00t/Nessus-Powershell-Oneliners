@@ -14,9 +14,7 @@ From what I can tell, TCP ports 135,139,445 and WMI-IN are required to be open f
 Below is a guide that I have generally found useful, the steps from which have been used to build the following powershell commands.
 https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-Windows
 
-A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output. 
 
-"
 1. The Windows Management Instrumentation (WMI) service must be enabled on the target. For more information, see https://technet.microsoft.com/en-us/library/cc180684.aspx
 2. The Remote Registry service must be enabled on the target.
 3. File & Printer Sharing must be enabled in the target's network configuration.
@@ -35,10 +33,12 @@ A general indicator that the patch audit ran correctly is the presence of "WMI A
   - The setting that controls this is AutoShareServer which must be set to 1.
   - Windows 10 has the ADMIN$ disabled by default.
   - For all other OS's, these shares are enabled by default and can cause other issues if disabled. For more information, see http://support.microsoft.com/kb/842715/en-us
-"
+
+A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output. 
+
 
 * * *
-# Check Creds Work
+# Check Admin Creds Work
 - Credentials have admin rights if they can access C$ and ADMIN$ share, both required for Nessus to work 
 - My testing indicates that you can use either:
   - Domain Admin account (in most situations
