@@ -119,9 +119,9 @@ netsh advfirewall firewall delete rule name="Nessus_Allow_TCP_445_private_SMB_In
 ```
 Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" | select LocalAccountTokenFilterPolicy
 ```
-```
+
+
 #### Enable LocalAccountTokenFilterPolicy by making a registry change to 1 
-```
 ```
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 1
 ```
@@ -132,8 +132,11 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies
 ```
 
 * * *
+
 # Check/Enable/Disable Admin Shares
 - Restart required after changing 
+
+
 ### Check if admin shares are enabled (AutoShareServer/AutoShareWorkstaiton)
 ```
 Get-SmbServerConfiguration | select AutoShareServer,AutoShareWorkstation
