@@ -17,17 +17,31 @@ net use \\192.168.0.110\admin$ "" /user:"USERNAME" "PASSWORD"
 net use \\192.168.0.110\admin$ "" /user:"USERNAME" "PASSWORD"
 net use \\192.168.0.110\admin$ "" /user:"USERNAME" "PASSWORD"
 ```
+
 * * *
-# Check Local Security Policy 
 
-Local Security Policy > Security Settings > Local Policies > Security Options > Network access: Sharing and security model for local accounts
-- Should be set to Classic - local users authenticate as themselves 
+# Check Registry/Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
 
+#### Check ForceGuest Value (and ensure it is not set to 1)
+```
+Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "ForceGuest" | select ForceGuest
+```
+
+#### Set to "Classic"
+```
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "ForceGuest" -Value 0 
+```
+
+#### Set to "Guest" 
+```
+Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "ForceGuest" -Value 1
+```
 * * *
 
 # Set Windows Firewall Rules to allow Nessus (WMI-IN, 135,139,445) 
 
 #### Add software firewall rules to allow Nessus Credentialed Scanning. Rules are named for ease of identification and removal. Double check no other explicit deny rules prevent these custom rules running. If you are on a domain/public profile you will need to change the "profile" bit. 
+
 ```
 netsh advfirewall firewall add rule dir=in name ="Nessus_Allow_WMI-in_Private" program=%systemroot%\system32\svchost.exe service=winmgmt action = allow protocol=TCP localport=any profile=private
 ```
@@ -51,6 +65,7 @@ netsh advfirewall firewall delete rule name="Nessus_Allow_TCP_135_private_DCOM_I
 ```
 netsh advfirewall firewall delete rule name="Nessus_Allow_TCP_139_private_NB_Session_In" profile=private
 ```
+```
 netsh advfirewall firewall delete rule name="Nessus_Allow_TCP_445_private_SMB_In" profile=private
 ```
 
@@ -70,7 +85,9 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies
 ```
 
 #### Disable LocalAccountTokenFilterPolicy by making a registry change to 0
+```
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 0 
+```
 
 * * *
 # Check/Enable/Disable Admin Shares
@@ -79,9 +96,7 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies
 ```
 Get-SmbServerConfiguration | select AutoShareServer,AutoShareWorkstation
 ```
-```
 ### Enble AutoShareServer and AutoShareWorkstation
-
 ```
 Set-SmbServerConfiguration -AutoShareServer $True -AutoShareWorkstation $True -Confirm:$false
 ```
@@ -119,21 +134,6 @@ Set-Service -Name winmgmt -Status Stopped -PassThru
 Set-Service RemoteRegistry -StartupType Disabled -PassThru
 Set-Service winmgmt -StartupType Disabled -PassThru
 ```
+
 * * *
 
-# Check Registry/Confirm ForceGuest is not set to 1 
-
-#### Check ForceGuest Value (and ensure it is not set to 1)
-```
-Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "ForceGuest" | select ForceGuest
-```
-
-#### Set to "Classic"
-```
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "ForceGuest" -Value 0 
-```
-
-#### Set to "Guest" 
-```
-Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "ForceGuest" -Value 1
-```
