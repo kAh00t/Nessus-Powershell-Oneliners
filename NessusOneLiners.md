@@ -151,11 +151,11 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies
 ```
 Get-SmbServerConfiguration | select AutoShareServer,AutoShareWorkstation
 ```
-### Enble AutoShareServer and AutoShareWorkstation
+#### Enble AutoShareServer and AutoShareWorkstation
 ```
 Set-SmbServerConfiguration -AutoShareServer $True -AutoShareWorkstation $True -Confirm:$false
 ```
-### Disable AutoShareServer and AutoShareWorkstation 
+#### Disable AutoShareServer and AutoShareWorkstation 
 ```
 Set-SmbServerConfiguration -AutoShareServer  $False -AutoShareWorkstation $False -Confirm:$false
 ```
@@ -166,28 +166,28 @@ Set-SmbServerConfiguration -AutoShareServer  $False -AutoShareWorkstation $False
 - You also need to ensure that the Remote Registry service is not set to "disabled", else Nessus will not be able to start the remote registry. 
 
 
-### Check status of WMI and RemoteRegistry
+#### Check status of WMI and RemoteRegistry
 ```
 Get-Service RemoteRegistry,Winmgmt | Select-Object -Property Name, StartType, Status
 ```
-### Enable RemoteRegistry/WMI by changing status to Automatic startup type (required for Nessus, Manual works too)
+#### Enable RemoteRegistry/WMI by changing status to Automatic startup type (required for Nessus, Manual works too)
 ```
 Set-Service RemoteRegistry -StartupType Automatic -PassThru
 Set-Service winmgmt -StartupType Automatic -PassThru
 ```
 
-### Start Remote Registry/WMI 
+#### Start Remote Registry/WMI 
 ```
 Set-Service -Name RemoteRegistry -Status Running -PassThru
 Set-Service -Name winmgmt -Status Running -PassThru
 ```
-### Stop Remote Registry/WMI
+#### Stop Remote Registry/WMI
 ```
 Set-Service -Name RemoteRegistry -Status Stopped -PassThru
 Set-Service -Name winmgmt -Status Stopped -PassThru
 ```
 
-### Disable RemoteRegistry/WMI (careful - other services might rely on these, take note of current settings and ensure you set them back the way they were to ensure nothing breaks)
+#### Disable RemoteRegistry/WMI (careful - other services might rely on these, take note of current settings and ensure you set them back the way they were to ensure nothing breaks)
 ```
 Set-Service RemoteRegistry -StartupType Disabled -PassThru
 Set-Service winmgmt -StartupType Disabled -PassThru
