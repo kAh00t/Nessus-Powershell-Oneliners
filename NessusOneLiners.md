@@ -1,5 +1,7 @@
 Below is a list of powershell commands that can aid in diagnosing issues with Tenable Nessus Credential Patch Audit. 
 
+Note: These commands will make changes to the local machine only, I understand that it is possible that if the device recieves a GPO update this will override the changes made. Keep this in mind! 
+
 * * *
 # IMPORTANT - Remember to take note of the original settings so you can clean up after yourself! #####
 * * *
