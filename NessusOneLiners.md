@@ -6,10 +6,18 @@ Note: These commands will make changes to the local machine only, I understand t
 # IMPORTANT - Remember to take note of the original settings so you can clean up after yourself! #####
 * * *
 
-Common issues that these steps might help resolve:
+Common indicators that your scan did not run correctly are as follows:
 - WMI Not Available 
+    - ![image](https://user-images.githubusercontent.com/15064447/129899988-e642a036-a87a-4513-be19-1f891608e49d.png)
+- "Nessus Scan Information" shows 
+    - ![image](https://user-images.githubusercontent.com/15064447/129900306-20d9a940-b331-4668-ab3d-a11213fa95a0.png)
 - Authentication Failure - Local Checks Not Run 
+    - ![image](https://user-images.githubusercontent.com/15064447/129900563-3e28cf5d-5f32-420d-9bd1-5da81f7d2b84.png)
 - Nessus Windows Scan Not Performed with Admin Privileges (i.e. "It was not possible to connect to '\\MACHINENAME\ADMIN%' with the supplied credentials 
+    - ![image](https://user-images.githubusercontent.com/15064447/129900419-9fc38392-2559-424c-9a79-dbf85ef6ea99.png)
+
+
+
 
 From what I can tell, TCP ports 135,139,445 and WMI-IN are required to be open for a scan to run successfully. 
 
