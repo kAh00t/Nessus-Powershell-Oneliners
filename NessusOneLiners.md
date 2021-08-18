@@ -36,6 +36,13 @@ https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-W
 
 A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output. 
 
+* * *
+# Scan to confirm ports are open before procedding
+- Note - you will still need to ensure that WMI-In is allowed on the target device, so far as I know this can't be easily tested remotely and you will likely need to check the software firewall configuration, if not open use the powershell commands below or edit the Domain firewall by GPO. 
+
+```
+sudo nmap -sS -Pn -p 135,139,445 -iL <list of targets> 
+```
 
 * * *
 # Check Admin Creds Work
@@ -112,21 +119,22 @@ netsh advfirewall firewall delete rule name="Nessus_Allow_TCP_445_private_SMB_In
 ```
 
 * * *
-# Enable LocalAccountTokenFilterPolicy
-- Required to be set to 1 if using a local adminisitrator account from a remote device. 
+# Enable/Disable LocalAccountTokenFilterPolicy
+- Required to be set to 1 (Disabled) if using a local adminisitrator account from a remote device, or a domain user in the local admins group. 
+- Shouldn't be required if using a default administrator account (
 
-#### Get LocalAccountTokenFilterPolicy. Enabled if set to 1 
+#### Get LocalAccountTokenFilterPolicy. Disabled if set to 1 
 ```
 Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" | select LocalAccountTokenFilterPolicy
 ```
 
 
-#### Enable LocalAccountTokenFilterPolicy by making a registry change to 1 
+#### Disable LocalAccountTokenFilterPolicy by making a registry change to 1 
 ```
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 1
 ```
 
-#### Disable LocalAccountTokenFilterPolicy by making a registry change to 0
+#### Enable LocalAccountTokenFilterPolicy by making a registry change to 0
 ```
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 0 
 ```
@@ -135,7 +143,7 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies
 
 # Check/Enable/Disable Admin Shares
 - Restart required for changes to take effect!  
-
+- Disabled by default on modern Windows 10 versions to my understanding
 
 ### Check if admin shares are enabled (AutoShareServer/AutoShareWorkstaiton)
 ```
