@@ -7,16 +7,14 @@ Note: These commands will make changes to the local machine only, I understand t
 * * *
 
 Common indicators that your scan did not run correctly are as follows:
-- WMI Not Available 
-    - ![image](https://user-images.githubusercontent.com/15064447/129899988-e642a036-a87a-4513-be19-1f891608e49d.png)
+- "WMI Not Available" 
+    - ![image](https://user-images.githubusercontent.com/15064447/129912469-79ffdf28-c88e-44ea-91a9-bbafde5c3081.png)
 - "Nessus Scan Information" shows 
     - ![image](https://user-images.githubusercontent.com/15064447/129900306-20d9a940-b331-4668-ab3d-a11213fa95a0.png)
-- Authentication Failure - Local Checks Not Run 
-    - ![image](https://user-images.githubusercontent.com/15064447/129900563-3e28cf5d-5f32-420d-9bd1-5da81f7d2b84.png)
-- Nessus Windows Scan Not Performed with Admin Privileges (i.e. "It was not possible to connect to '\\MACHINENAME\ADMIN%' with the supplied credentials 
-    - ![image](https://user-images.githubusercontent.com/15064447/129900419-9fc38392-2559-424c-9a79-dbf85ef6ea99.png)
-
-
+- "Authentication Failure - Local Checks Not Run" 
+    - ![image](https://user-images.githubusercontent.com/15064447/129912513-395bc194-0a19-4979-8cbf-36c3fb30540c.png)
+- "Nessus Windows Scan Not Performed with Admin Privileges" (i.e. "It was not possible to connect to '\\MACHINENAME\ADMIN%' with the supplied credentials 
+    - ![image](https://user-images.githubusercontent.com/15064447/129912553-0c705c28-758c-4cb1-9fb7-d59c996c316a.png)
 
 
 From what I can tell, TCP ports 135,139,445 and WMI-IN are required to be open for a scan to run successfully. 
@@ -44,7 +42,10 @@ https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-W
   - Windows 10 has the ADMIN$ disabled by default.
   - For all other OS's, these shares are enabled by default and can cause other issues if disabled. For more information, see http://support.microsoft.com/kb/842715/en-us
 
-A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output. 
+A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output:
+- ![image](https://user-images.githubusercontent.com/15064447/129912817-583ad39e-6642-4756-aeaa-2d9dac07603a.png)
+- ![image](https://user-images.githubusercontent.com/15064447/129912749-1ea7064a-503b-4c37-95bc-347cbb0c7ced.png)
+
 
 * * *
 # Scan to confirm ports are open before procedding
@@ -55,7 +56,7 @@ sudo nmap -sS -Pn -p 135,139,445 -iL <list of targets>
 ```
 
 * * *
-# Check Admin Creds Work
+# Check Admin Credentials Work
 - Credentials have admin rights if they can access C$ and ADMIN$ share, both required for Nessus to work 
 - My testing indicates that you can use either:
   - Domain Admin account (in most situations
@@ -70,7 +71,7 @@ smbclient //192.168.0.110/IPC$ -U 'DOMAIN\USERNAME' 'PASSWORD'
 smbclient //192.168.0.110/ADMIN$ -U 'DOMAIN\USERNAME' 'PASSWORD'
 ```
 
-#### Check credentials are working from a Windows box 
+#### Check credentials are working from a Windows box using Powershell.
 ```
 net use \\192.168.0.110\admin$ "" /user:"USERNAME" "PASSWORD"
 net use \\192.168.0.110\admin$ "" /user:"USERNAME" "PASSWORD"
