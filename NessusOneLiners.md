@@ -8,12 +8,15 @@ Note: These commands will make changes to the local machine only, I understand t
 
 Common indicators that your scan did not run correctly are as follows:
 - "WMI Not Available" 
+    - Indicates either WMI is not enabled as a service on the target, or WMI-In is not enabled on the software firewall. Ensure the service is enabled and set to either "automatic" or "manual", and the relevant software firewall rule is set on the correct profile (see "Enable Remote Registry and WMI" section and "Set Firewall Rules" sections below)
     - ![image](https://user-images.githubusercontent.com/15064447/129912469-79ffdf28-c88e-44ea-91a9-bbafde5c3081.png)
-- "Nessus Scan Information" shows 
+- "Nessus Scan Information" this contains the first indicator that a credential scan was successful or not (see screenshot) 
     - ![image](https://user-images.githubusercontent.com/15064447/129900306-20d9a940-b331-4668-ab3d-a11213fa95a0.png)
 - "Authentication Failure - Local Checks Not Run" 
+    - This often indicates that the remote registry is not enabled. See the Remote Registry section and enable.   
     - ![image](https://user-images.githubusercontent.com/15064447/129912513-395bc194-0a19-4979-8cbf-36c3fb30540c.png)
-- "Nessus Windows Scan Not Performed with Admin Privileges" (i.e. "It was not possible to connect to '\\MACHINENAME\ADMIN%' with the supplied credentials 
+- "Nessus Windows Scan Not Performed with Admin Privileges" (i.e. "It was not possible to connect to '\\MACHINENAME\ADMIN%' with the supplied credentials)
+    - This most likely indicates that administrative shares are not enabled or you do not have admin credentials. See the "Enable Autoshare" section below and enable. 
     - ![image](https://user-images.githubusercontent.com/15064447/129912553-0c705c28-758c-4cb1-9fb7-d59c996c316a.png)
 
 
