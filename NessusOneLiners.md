@@ -4,8 +4,9 @@ Note: These commands will make changes to the local machine only, I understand t
 
 * * *
 # IMPORTANT - Remember to take note of the original settings so you can clean up after yourself! #####
-* * *
 
+
+#### Common Scan Failure Indicators
 Common indicators that your scan did not run correctly are as follows:
 - "WMI Not Available" 
     - Indicates either WMI is not enabled as a service on the target, or WMI-In is not enabled on the software firewall. Ensure the service is enabled and set to either "automatic" or "manual", and the relevant software firewall rule is set on the correct profile (see "Enable Remote Registry and WMI" section and "Set Firewall Rules" sections below)
@@ -19,13 +20,18 @@ Common indicators that your scan did not run correctly are as follows:
     - This most likely indicates that administrative shares are not enabled or you do not have admin credentials. See the "Enable Autoshare" section below and enable. 
     - ![image](https://user-images.githubusercontent.com/15064447/129912553-0c705c28-758c-4cb1-9fb7-d59c996c316a.png)
 
+#### Common Scan Success Indicators 
+A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output:
+- ![image](https://user-images.githubusercontent.com/15064447/129912817-583ad39e-6642-4756-aeaa-2d9dac07603a.png)
+- ![image](https://user-images.githubusercontent.com/15064447/129912749-1ea7064a-503b-4c37-95bc-347cbb0c7ced.png)
 
+
+#### Troubleshooting Steps 
 From what I can tell, TCP ports 135,139,445 and WMI-IN are required to be open for a scan to run successfully. 
 
 Below is a guide that I have generally found useful, the steps from which have been used to build the following powershell commands.
 https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-Windows
-
-
+```
 1. The Windows Management Instrumentation (WMI) service must be enabled on the target. For more information, see https://technet.microsoft.com/en-us/library/cc180684.aspx
 2. The Remote Registry service must be enabled on the target.
 3. File & Printer Sharing must be enabled in the target's network configuration.
@@ -44,14 +50,23 @@ https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-W
   - The setting that controls this is AutoShareServer which must be set to 1.
   - Windows 10 has the ADMIN$ disabled by default.
   - For all other OS's, these shares are enabled by default and can cause other issues if disabled. For more information, see http://support.microsoft.com/kb/842715/en-us
-
-A general indicator that the patch audit ran correctly is the presence of "WMI Available" in the scan logs, and "Credentialed Checks : Yes" in Nessus Scan Information plugin output:
-- ![image](https://user-images.githubusercontent.com/15064447/129912817-583ad39e-6642-4756-aeaa-2d9dac07603a.png)
-- ![image](https://user-images.githubusercontent.com/15064447/129912749-1ea7064a-503b-4c37-95bc-347cbb0c7ced.png)
-
+```
 
 * * *
-# Scan to confirm ports are open before procedding
+# Setup/Troubleshooting Commands 
+- Below are the commands to assist, please read all the notes and remember to clean up 
+- Summary:
+    - [ ] Scan to confirm ports are open before procedding
+    - [ ] Create Local User Account and add to Administrators group (If Needed)
+    - [ ] Enable/Disable LocalAccountTokenFilterPolicy
+    - [ ] Check Admin Credentials Work Remotely 
+    - [ ] Check Registry/Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
+    - [ ] Set/Remove Windows Firewall Rules to required to allow Nessus to perform a full credentialed scan (WMI-IN, 135,139,445) 
+    - [ ] Check/Enable/Disable Admin Shares# Check/Enable/Run Remote Registry and WMI
+    - [ ] Check/Enable/Run Remote Registry and WMI
+
+* * *
+## Scan to confirm ports are open before procedding
 - Note - you will still need to ensure that WMI-In is allowed on the target device, so far as I know this can't be easily tested remotely and you will likely need to check the software firewall configuration, if not open use the powershell commands below or edit the Domain firewall by GPO. 
 
 ```
@@ -59,13 +74,64 @@ sudo nmap -sS -Pn -p 135,139,445 -iL <list of targets>
 ```
 
 * * *
-# Check Admin Credentials Work
-- Credentials have admin rights if they can access C$ and ADMIN$ share, both required for Nessus to work 
+## Create Local User Account and add to Administrators group (If Needed)
 - My testing indicates that you can use either:
   - Domain Admin account (in most situations
   - Local Administrator account (you will need to enable the LocalAccountTokenFilterPolicy i.e. set to 1, to use this account from a remote device) 
   - Domain User inside the Administrators group of each device you are scanning (handy if you have a limited scope to scan on a domain but don't want to use DA)
-    
+- Below are the instructions to create a local user account and add to the administrators group, which should allow for successful credential scanning if all other requirements are met
+- Create domain user accounts is out of scope of this tutorial
+- REMEMBER AND CLEAN UP AFTER YOURSELF! 
+
+#### Create Local User and enter password securely
+- It is bad practise to enter a password directly in the command line, to do this more securely use the next command 
+- As the initial account is being created with no password it is vital to make sure you manually create a password after
+```
+New-LocalUser -Name "CE-Nessus" -Description "CEPlus Nessus Account" -NoPassword
+$UserPassword = Read-Host –AsSecureString
+Set-LocalUser -Name "CE-Nessus" -Password $UserPassword –Verbose
+```
+
+#### Confirm Local User Created
+```
+Get-LocalUser CE-Nessus
+```
+#### Add User to Administrators Group 
+```
+Add-LocalGroupMember -Group 'Administrators' -Member ("CE-Nessus") –Verbose
+```
+#### Confirm User Added to Administrators Group 
+```
+Get-LocalGroupMember -Group 'Administrators'
+```
+#### IMPORTANT DO NOT SKIP - Remove User (Once scan completed) 
+- Rerun `Get-LocalUser CE-Nessus` to confirm.
+```
+Remove-LocalUser -Name "CE-Nessus" -Verbose
+```
+
+* * *
+## Enable/Disable LocalAccountTokenFilterPolicy
+- Required to be set to 1 (Disabled) if using a local adminisitrator account from a remote device, or a domain user in the local admins group. 
+- Shouldn't be required if using a default administrator account (
+
+#### Get LocalAccountTokenFilterPolicy. Disabled if set to 1 
+```
+Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" | select LocalAccountTokenFilterPolicy
+```
+#### Disable LocalAccountTokenFilterPolicy by making a registry change to 1 
+```
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 1
+```
+#### Enable LocalAccountTokenFilterPolicy by making a registry change to 0
+```
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 0 
+```
+
+* * *
+## Check Admin Credentials Work Remotely 
+- Credentials have admin rights if they can access C$ and ADMIN$ share, both required for Nessus to work 
+
 
 #### Check credentials are working from a Linux box 
 ```
@@ -82,8 +148,7 @@ net use \\192.168.0.110\admin$ "" /user:"USERNAME" "PASSWORD"
 ```
 
 * * *
-
-# Check Registry/Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
+## Check Registry/Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
 
 #### Check ForceGuest Value (and ensure it is not set to 1)
 ```
@@ -100,8 +165,7 @@ Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "Forc
 Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "ForceGuest" -Value 1
 ```
 * * *
-
-# Set Windows Firewall Rules to required to allow Nessus to perform a full credentialed scan (WMI-IN, 135,139,445) 
+## Set/Remove Windows Firewall Rules to required to allow Nessus to perform a full credentialed scan (WMI-IN, 135,139,445) 
 
 #### Add software firewall rules to allow Nessus Credentialed Scanning. Rules are named for ease of identification and removal. Double check no other explicit deny rules prevent these custom rules running. If you are on a domain/public profile you will need to change the "profile" flag to Domain/Public. Be careful when opening ports on the public profile as these remaining open after the test represents a potential security risk. 
 
@@ -133,29 +197,8 @@ netsh advfirewall firewall delete rule name="Nessus_Allow_TCP_445_private_SMB_In
 ```
 
 * * *
-# Enable/Disable LocalAccountTokenFilterPolicy
-- Required to be set to 1 (Disabled) if using a local adminisitrator account from a remote device, or a domain user in the local admins group. 
-- Shouldn't be required if using a default administrator account (
 
-#### Get LocalAccountTokenFilterPolicy. Disabled if set to 1 
-```
-Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" | select LocalAccountTokenFilterPolicy
-```
-
-
-#### Disable LocalAccountTokenFilterPolicy by making a registry change to 1 
-```
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 1
-```
-
-#### Enable LocalAccountTokenFilterPolicy by making a registry change to 0
-```
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\system" -Name "LocalAccountTokenFilterPolicy" -Value 0 
-```
-
-* * *
-
-# Check/Enable/Disable Admin Shares
+## Check/Enable/Disable Admin Shares
 - Restart required for changes to take effect!  
 - Disabled by default on modern Windows 10 versions to my understanding
 
@@ -173,7 +216,7 @@ Set-SmbServerConfiguration -AutoShareServer  $False -AutoShareWorkstation $False
 ```
 
 * * *
-# Check/Enable/Run Remote Registry and WMI 
+## Check/Enable/Run Remote Registry and WMI 
 - Nessus will not scan correct if WMI or Remote Registry are not set to "Automatic" or "Manual". 
 - You also need to ensure that the Remote Registry service is not set to "disabled", else Nessus will not be able to start the remote registry. 
 
@@ -187,7 +230,6 @@ Get-Service RemoteRegistry,Winmgmt | Select-Object -Property Name, StartType, St
 Set-Service RemoteRegistry -StartupType Automatic -PassThru
 Set-Service winmgmt -StartupType Automatic -PassThru
 ```
-
 #### Start Remote Registry/WMI 
 ```
 Set-Service -Name RemoteRegistry -Status Running -PassThru
@@ -198,12 +240,10 @@ Set-Service -Name winmgmt -Status Running -PassThru
 Set-Service -Name RemoteRegistry -Status Stopped -PassThru
 Set-Service -Name winmgmt -Status Stopped -PassThru
 ```
-
 #### Disable RemoteRegistry/WMI (careful - other services might rely on these, take note of current settings and ensure you set them back the way they were to ensure nothing breaks)
 ```
 Set-Service RemoteRegistry -StartupType Disabled -PassThru
 Set-Service winmgmt -StartupType Disabled -PassThru
 ```
-
 * * *
 
