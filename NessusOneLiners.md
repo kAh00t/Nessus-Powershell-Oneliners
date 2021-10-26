@@ -60,7 +60,7 @@ https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-W
     - [ ] Create Local User Account and add to Administrators group (If Needed)
     - [ ] Enable/Disable LocalAccountTokenFilterPolicy
     - [ ] Check Admin Credentials Work Remotely 
-    - [ ] Check Registry/Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
+    - [ ] Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
     - [ ] Set/Remove Windows Firewall Rules to required to allow Nessus to perform a full credentialed scan (WMI-IN, 135,139,445) 
     - [ ] Check/Enable/Disable Admin Shares# Check/Enable/Run Remote Registry and WMI
     - [ ] Check/Enable/Run Remote Registry and WMI
@@ -148,7 +148,11 @@ net use \\192.168.0.110\admin$ "" /user:"USERNAME" "PASSWORD"
 ```
 
 * * *
-## Check Registry/Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
+## Confirm ForceGuest is set to 0 (Classic is required for Nessus seemingly) - Windows XP Only! (see LocalAccountTokenFilterPolicy for Win 7 and above) 
+- The commands below check to see if ForceGuest is enabled. Research indicates that Classic must be set for Nessus to access admin shares in some instances
+- This may only be required if using a local account as network logons are treated as "Guest" rather than Admin, thus preventing access to admin shares
+- Shouldn't be needed for Domain Admin or Domain Users
+- Reference: https://ingmarverheij.com/how-to-enable-administrative-shares-for-local-accounts/ 
 
 #### Check ForceGuest Value (and ensure it is not set to 1)
 ```
