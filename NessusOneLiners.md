@@ -64,6 +64,7 @@ https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-W
     - [ ] Set/Remove Windows Firewall Rules to required to allow Nessus to perform a full credentialed scan (WMI-IN, 135,139,445) 
     - [ ] Check/Enable/Disable Admin Shares# Check/Enable/Run Remote Registry and WMI
     - [ ] Check/Enable/Run Remote Registry and WMI
+    - [ ] Enable/Disable Microsoft InTune Management Extension (only needed in specific cases!)
 
 * * *
 ## Scan to confirm ports are open before procedding
@@ -250,4 +251,23 @@ Set-Service RemoteRegistry -StartupType Disabled -PassThru
 Set-Service winmgmt -StartupType Disabled -PassThru
 ```
 * * *
+## Enable/Disable Microsoft InTune Management Extension (only needed in specific cases!)
+- Only adding this as it is a fringe case I came across. We had made local changes to a small sample of devices but after 30 minutes we noticed all the changes had reverted. This was because InTune was pushing out updates that were overwriting these changes. Use the commands below to check/start/stop the service for the duration of the scan
+- Important - Remember to re-enable after the scan
+
+#### Check if Microsoft InTune Management Extension Enabled
+```
+Get-Service -Name "Microsoft Intune Management Extension"
+```
+
+#### Start Microsoft InTune Management Extension Enabled
+```
+Start-Service -Name "Microsoft Intune Management Extension"
+```
+
+#### Stop Microsoft InTune Management Extension Enabled
+```
+Stop-Service -Name "Microsoft Intune Management Extension"
+```
+
 
