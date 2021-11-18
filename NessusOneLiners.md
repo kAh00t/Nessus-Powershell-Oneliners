@@ -58,7 +58,7 @@ https://community.tenable.com/s/article/Troubleshooting-Credential-scanning-on-W
 - Summary:
     - [ ] Scan to confirm ports are open before procedding
     - [ ] Create Local User Account and add to Administrators group (If Needed)
-    - [ ] Enable/Disable LocalAccountTokenFilterPolicy
+    - [ ] Enable/Disable LocalAccountTokenFilterPolicy (if using local accounts only)
     - [ ] Check Admin Credentials Work Remotely 
     - [ ] Confirm ForceGuest is not set to 1 (Classic is required for Nessus seemingly) 
     - [ ] Set/Remove Windows Firewall Rules to required to allow Nessus to perform a full credentialed scan (WMI-IN, 135,139,445) 
