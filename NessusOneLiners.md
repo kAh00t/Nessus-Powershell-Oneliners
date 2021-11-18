@@ -175,7 +175,7 @@ Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa\" -Name "Forc
 #### Add software firewall rules to allow Nessus Credentialed Scanning. Rules are named for ease of identification and removal. Double check no other explicit deny rules prevent these custom rules running. If you are on a domain/public profile you will need to change the "profile" flag to Domain/Public. Be careful when opening ports on the public profile as these remaining open after the test represents a potential security risk. 
 
 ```
-netsh advfirewall firewall add rule dir=in name ="Nessus_Allow_WMI-in_Private" program=%systemroot%\system32\svchost.exe service=winmgmt action = allow protocol=TCP localport=any profile=private
+netsh advfirewall firewall add rule dir=in name ="Nessus_Allow_WMI-in_Private" program=%systemroot%\system32\svchost.exe service=winmgmt action=allow protocol=TCP localport=any profile=private
 ```
 ```
 netsh advfirewall firewall add rule dir=in action=allow protocol=TCP localport=135 name="Nessus_Allow_TCP_135_private_DCOM_In" profile=private
